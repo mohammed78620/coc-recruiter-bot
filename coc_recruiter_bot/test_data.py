@@ -30,7 +30,7 @@ mock_data = [
                 "fields": [
                     {
                         "name": "Player tag",
-                        "value": "[#QPCRY9CUJ]",
+                        "value": "[#QPCRY9CUJ](url)",
                         "inline": True,
                     },
                     {

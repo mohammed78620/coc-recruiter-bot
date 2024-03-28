@@ -22,9 +22,11 @@ def extract_user_info(messages) -> List[ClashUser]:
             continue
 
         townhall_level = int(fields[1]["value"].split(" ")[-1])
+        # player tag is informat "[#QPCRY9CUJ](https://link.clashofclans.com)"
+        player_tag = fields[0]["value"].split("]")[0][1:]
 
         if townhall_level >= MIN_TOWNHALL_LEVEL:
-            clash_user = ClashUser(id=id, username=username, townhall_level=townhall_level)
+            clash_user = ClashUser(id=id, username=username, townhall_level=townhall_level, player_tag=player_tag)
             clash_users.append(clash_user)
 
     return clash_users
