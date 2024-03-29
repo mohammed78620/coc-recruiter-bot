@@ -1,15 +1,14 @@
 import json
+import time
 from datetime import datetime, timedelta, timezone
 from typing import List
 
 import requests
 
-from coc_recruiter_bot.constants import MIN_TOWNHALL_LEVEL
+from coc_recruiter_bot.constants import COC_CHANNEL_ID, INITIAL_MESSAGE, MAX_NUMBER_OF_MESSAGES, MIN_TOWNHALL_LEVEL
 from coc_recruiter_bot.funcs.send_message import create_dm_channel, send_message
 from coc_recruiter_bot.schema.clash_user import ClashUser
 from coc_recruiter_bot.settings import DISCORD_TOKEN
-
-# from coc_recruiter_bot.test_data import mock_data
 
 
 def extract_user_info(messages) -> List[ClashUser]:
@@ -63,21 +62,23 @@ def recieve_messages(channel_id: int) -> List:
         timeout=10,
     )
     obj = json.loads(res.text)
+
+    if len(obj) > MAX_NUMBER_OF_MESSAGES:
+        return obj[:MAX_NUMBER_OF_MESSAGES]
+
     return obj
 
 
 if __name__ == "__main__":
-    # messages = recieve_messages(1058589660798013440)
-    # filtered_messages = filter_timestamps(mock_data, 1)
-    # clash_users = extract_user_info(filtered_messages)
-    # print(clash_users)
-    message = (
-        "yo bro, got an active and friendly clan that has a\n"
-        + "great war log\n"
-        + "can put u in all days of cwl too if ur interested\n"
-        + "lmk bro"
-    )
-    user_id = "999411272074403901"
+    messages = recieve_messages(1058589660798013440)
+    filtered_messages = filter_timestamps(messages, 1)
+    clash_users = extract_user_info(filtered_messages)
+    print(clash_users)
 
-    channel_id = create_dm_channel(DISCORD_TOKEN, user_id)
-    send_message(DISCORD_TOKEN, channel_id, message)
+    # print(message)
+    for clash_user in clash_users:
+        user_id = clash_user.id
+
+        channel_id = create_dm_channel(DISCORD_TOKEN, user_id)
+        send_message(DISCORD_TOKEN, COC_CHANNEL_ID, INITIAL_MESSAGE)
+        time.sleep(10)

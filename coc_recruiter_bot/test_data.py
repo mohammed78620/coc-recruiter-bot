@@ -1,3 +1,5 @@
+from coc_recruiter_bot.schema.clash_user import ClashUser
+
 mock_data = [
     {
         "id": "1222696561163632752",
@@ -171,3 +173,8 @@ mock_data = [
     },
     # {"timestamp": "2024-03-29T23:59:36.785000+00:00"},
 ]
+
+
+clash_user_instance_1 = ClashUser(
+    id="660862690411151361", username=".gameitup", townhall_level=12, player_tag="#QRURPV2RC"
+)
