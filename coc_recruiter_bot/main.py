@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from datetime import datetime, timedelta, timezone
 from typing import List
@@ -9,6 +10,30 @@ from coc_recruiter_bot.constants import COC_CHANNEL_ID, INITIAL_MESSAGE, MAX_NUM
 from coc_recruiter_bot.funcs.send_message import create_dm_channel, send_message
 from coc_recruiter_bot.schema.clash_user import ClashUser
 from coc_recruiter_bot.settings import DISCORD_TOKEN
+
+
+def configure_logging(debug: bool = False):
+    if debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    log_file = "logs.log"
+
+    log_formatter = logging.Formatter("%(asctime)s: %(levelname)s: [%(name)s]: %(message)s")
+
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(log_formatter)
+    file_handler.setLevel(log_level)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(log_formatter)
+    stream_handler.setLevel(log_level)
+
+    app_logger = logging.getLogger("root")
+    app_logger.setLevel(log_level)
+    app_logger.addHandler(file_handler)
+    app_logger.addHandler(stream_handler)
 
 
 def extract_user_info(messages) -> List[ClashUser]:
@@ -61,7 +86,11 @@ def recieve_messages(channel_id: int) -> List:
         headers=headers,
         timeout=10,
     )
-    obj = json.loads(res.text)
+    try:
+        obj = json.loads(res.text)
+    except Exception as e:
+        logger.info(e)
+        return []
 
     if len(obj) > MAX_NUMBER_OF_MESSAGES:
         return obj[:MAX_NUMBER_OF_MESSAGES]
@@ -70,15 +99,19 @@ def recieve_messages(channel_id: int) -> List:
 
 
 if __name__ == "__main__":
-    messages = recieve_messages(1058589660798013440)
+    configure_logging()
+    logger = logging.getLogger()
+    messages = recieve_messages(COC_CHANNEL_ID)
+    logger.info(f"number of messages recieved: {len(messages)}")
     filtered_messages = filter_timestamps(messages, 1)
+    logger.info(f"number of messages after filtering: {len(filtered_messages)}")
     clash_users = extract_user_info(filtered_messages)
-    print(clash_users)
 
-    # print(message)
     for clash_user in clash_users:
         user_id = clash_user.id
 
         channel_id = create_dm_channel(DISCORD_TOKEN, user_id)
-        send_message(DISCORD_TOKEN, COC_CHANNEL_ID, INITIAL_MESSAGE)
         time.sleep(10)
+        send_message(DISCORD_TOKEN, channel_id, INITIAL_MESSAGE)
+
+    logger.info("Bot finished!!")

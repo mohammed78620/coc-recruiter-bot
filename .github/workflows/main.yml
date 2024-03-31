@@ -1,0 +1,83 @@
+name: Main CI/CD
+
+
+# Controls when the workflow will run
+on: [push]
+
+#########################################  PACKAGING
+  Create_And_Publish_Package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    container: python:3.10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        apt update
+        apt-get install gnupg2 curl wget apt-transport-https software-properties-common -y
+        apt -qq -y install python3 python3-pip git pkg-config libicu-dev
+        pip install "poetry==1.4.2" && poetry --version
+        poetry config virtualenvs.create true
+        poetry install
+        source `poetry env info --path`/bin/activate
+
+    - name: Configure GCP credentials
+      if: github.ref == 'refs/heads/main'
+      uses: google-github-actions/auth@v1
+      with:
+        service_account: coc-artifact-registry@coc-recruitment.iam.gserviceaccount.com
+        credentials_json: ${{ secrets.GCP_ARTIFACT_KEY }}
+
+    - name: Build and push package to GCP
+      id: build-image
+      shell: bash
+      run: |
+        apt update
+        pip install gsutil
+        pip install keyrings.google-artifactregistry-auth
+        pip install "poetry==1.4.2" && poetry --version
+        poetry config virtualenvs.create true
+        poetry install
+        source `poetry env info --path`/bin/activate
+        case ${GITHUB_REF##*/} in 'main') PYPI_REMOTE="https://us-central1-python.pkg.dev/coc-recruitment/coc-recruitment/" ;; 'main') ;; esac
+        poetry config repositories.gcp ${PYPI_REMOTE}
+        poetry build
+        poetry publish -r gcp
+
+#########################################  GENERATE DOCKER IMAGE
+  Generate_And_Upload_Docker_Image:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      GCP_CONTAINER_REGISTRY: us-central1-docker.pkg.dev
+      GCP_ARTIFACT_KEY: ${{ secrets.GCP_ARTIFACT_KEY }}
+      GCP_PROJECT_ID: coc-recruitment
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure GCP credentials
+      if: github.ref == 'refs/heads/main'
+      uses: google-github-actions/auth@v1
+      with:
+        service_account: coc-recruitment-artifact-registry
+        credentials_json: ${{ env.GCP_ARTIFACT_KEY }}
+
+
+    - name: Configure Docker
+      run: gcloud auth configure-docker $GCP_CONTAINER_REGISTRY
+
+    - name: Build, tag, and push image to GCP artifact registry
+      id: build-image
+
+      run: |
+        # Build a docker container and
+        # push it to registry
+        if [[ "${{github.base_ref}}" == "main" || "${{github.ref}}" == "refs/heads/main" ]]; then
+          docker build -f Dockerfile -t $GCP_CONTAINER_REGISTRY/$GCP_PROJECT_ID/${{ github.event.repository.name }}/latest .
+          docker push $GCP_CONTAINER_REGISTRY/$GCP_PROJECT_ID/${{ github.event.repository.name }}/latest
+        fi

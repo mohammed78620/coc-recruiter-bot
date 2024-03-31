@@ -3,8 +3,15 @@ import requests
 
 def send_message(token, channel_id, message):
     url = "https://discord.com/api/v9/channels/{}/messages".format(channel_id)
-    data = {"content": message}
-    header = {"authorization": token}
+    data = {
+        "content": message,
+        "mobile_network_type": "unknown",
+        "tts": False,
+        "flags": 0,
+    }
+    header = {
+        "authorization": token,
+    }
 
     r = requests.post(url, data=data, headers=header, timeout=10)
     print(r.status_code)
