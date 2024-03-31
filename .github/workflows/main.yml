@@ -4,6 +4,7 @@ name: Main CI/CD
 # Controls when the workflow will run
 on: [push]
 
+jobs:
 #########################################  PACKAGING
   Create_And_Publish_Package:
     if: github.ref == 'refs/heads/main'
