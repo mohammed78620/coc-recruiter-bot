@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coc-recruiter-bot"
-version = "0.1.0"
+version = "1.0.0"
 description = "A discord bot that crawls channel for people looking for a clan and recruits them"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
