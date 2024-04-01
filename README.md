@@ -32,6 +32,7 @@ Create a .env file in the root directory of the project and set the following en
 ```bash
 DISCORD_TOKEN=<your_discord_token>
 CLAN_TAG=<your_clan_tag>
+SEND_MESSAGE=<False or True>
 ```
 
 ## Running script
