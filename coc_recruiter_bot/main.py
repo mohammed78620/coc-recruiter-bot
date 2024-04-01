@@ -9,7 +9,7 @@ import requests
 from coc_recruiter_bot.constants import COC_CHANNEL_ID, INITIAL_MESSAGE, MAX_NUMBER_OF_MESSAGES, MIN_TOWNHALL_LEVEL
 from coc_recruiter_bot.funcs.send_message import create_dm_channel, send_message
 from coc_recruiter_bot.schema.clash_user import ClashUser
-from coc_recruiter_bot.settings import DISCORD_TOKEN
+from coc_recruiter_bot.settings import DISCORD_TOKEN, SEND_MESSAGE
 
 
 def configure_logging(debug: bool = False):
@@ -112,6 +112,8 @@ if __name__ == "__main__":
 
         channel_id = create_dm_channel(DISCORD_TOKEN, user_id)
         time.sleep(10)
-        send_message(DISCORD_TOKEN, channel_id, INITIAL_MESSAGE)
+
+        if SEND_MESSAGE:
+            send_message(DISCORD_TOKEN, channel_id, INITIAL_MESSAGE)
 
     logger.info("Bot finished!!")
