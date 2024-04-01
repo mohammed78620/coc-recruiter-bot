@@ -2,6 +2,10 @@
 
 This repository contains Python scripts for a Discord bot tailored for Clash of Clans recruitment purposes. The bot is designed to extract relevant user information from Discord messages, filter messages based on timestamps, and interact with users through direct messages.
 
+# GCP Architecture
+
+![screenshot](images/coc_recruiter_cloud_architecture.png)
+
 ## Dependencies
 
 Ensure you have Python installed on your system. This project requires the following dependencies managed via Poetry:
@@ -34,5 +38,5 @@ CLAN_TAG=<your_clan_tag>
 
 run the following command
 ```bash
-poetry run python coc_recruiter_bot/main.py
+poetry run python -m coc_recruiter_bot.main
 ```
